@@ -31,3 +31,59 @@ Establish a minimal, safe connection from GitHub/Codex to Feishu Bitable before 
 - V1 may only operate on the designated test Base/Table.
 - No destructive actions.
 - Default execution is read-only; writes require an explicit `--write-test` flag.
+
+## Setup and run
+
+Python 3.9 or newer is required. The connector uses only the Python standard
+library.
+
+Set credentials in your shell (or copy `.env.example` to a local `.env` and
+load it with your preferred environment tool). The connector intentionally does
+not read `.env` itself.
+
+```bash
+export FEISHU_APP_ID='your_app_id'
+export FEISHU_APP_SECRET='your_app_secret'
+python3 feishu/connector.py
+```
+
+The default command is read-only. Its JSON output contains only the mode,
+resolution result, record count, and aggregate counts for `Pending`,
+`Connected`, and other/unset statuses. It never prints credentials, tokens,
+authorization headers, app tokens, record IDs, or arbitrary record fields.
+
+To perform the narrowly scoped connection test:
+
+```bash
+python3 feishu/connector.py --write-test
+```
+
+This explicit mode updates the first record whose `Status` is exactly
+`Pending` to `Connected`. If none exists, it discovers the table's primary
+field and creates a record labeled `Codex connection test` with status
+`Connected`. It then re-reads the table and verifies the resulting record.
+
+The optional target variables shown in `.env.example` may be omitted. If
+provided, each must exactly match the documented Wiki node, table, and view;
+the connector refuses any other target.
+
+## Tests
+
+The tests use an in-memory mock transport and make no Feishu requests:
+
+```bash
+cd feishu
+python3 -m unittest -v test_connector.py
+```
+
+Authentication, Wiki resolution, table permission, and record-operation errors
+are reported as distinct failures. Error messages include only safe operation
+and numeric status/code details, not API response bodies.
+
+## Required Feishu-side configuration
+
+The `WML AI Operations` app must be enabled for the tenant, have access to the
+documented Wiki/Bitable, and have Wiki plus Bitable read permissions. The
+`--write-test` command additionally requires Bitable record-edit permission.
+The target table must contain a `Status` field that accepts `Pending` and
+`Connected`. These settings cannot be inferred or changed by this connector.
