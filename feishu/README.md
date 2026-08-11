@@ -93,16 +93,34 @@ The target table must contain a `Status` field that accepts `Pending` and
 ## Read-only workspace inventory
 
 The inventory CLI reuses the connector authentication and secret-safe GET
-transport. It recursively discovers accessible Wiki spaces/nodes and Drive
-folders/files, inventories Bitable tables discovered through those surfaces,
-and continues when an individual scope is inaccessible.
-If the application cannot enumerate all Wiki spaces, discovery automatically
-falls back to the designated Wiki node already configured and verified by the
-Issue #1 connector; this is recorded as partial coverage rather than presented
-as a complete workspace inventory.
+transport. It uses a controlled Business Knowledge Roots model because a tenant
+application's Wiki/Drive roots are not a complete enterprise-wide workspace
+index. It never treats an empty app Drive root as complete coverage and does
+not perform global search or user OAuth.
+
+Copy the committed template to the ignored local configuration file, then
+replace the examples with the roots the application is allowed to read:
 
 ```bash
-python3 feishu/inventory.py
+cp feishu/knowledge-roots.example.json feishu/knowledge-roots.json
+```
+
+Supported root types are:
+
+- `wiki_space`: a Wiki space ID; scans all nodes below the space root.
+- `wiki_node`: a Wiki node token; resolves and scans only that subtree.
+- `drive_folder`: a shared Drive folder token; scans all nested files/folders.
+- `bitable`: a Bitable app token; inventories the Base and its tables.
+
+Root identifiers are retrieval metadata rather than credentials, but the live
+configuration remains ignored to avoid publishing internal workspace layout.
+Share each configured Wiki space/node or Drive folder with the tenant app and
+grant its read-only scopes. A configured Base must also be readable by the app.
+Do not add both a parent root and every child unless overlapping coverage is
+intentional.
+
+```bash
+python3 feishu/inventory.py --roots-file feishu/knowledge-roots.json
 ```
 
 It writes a versioned machine-readable index to
@@ -115,10 +133,11 @@ and retrieval identifiers but never credentials, access tokens, authorization
 headers, document bodies, or Bitable record contents. Classification values are
 metadata-based candidates with confidence/status, not an approved taxonomy.
 
-The app needs the relevant read scopes and document access for Wiki node lists,
-Drive folder listings, and Bitable table metadata. Feishu may expose only the
-resources explicitly shared with a tenant application; inaccessible discovery
-scopes are recorded as partial results rather than terminating the inventory.
+The report distinguishes discovered roots, inaccessible APIs, permission
+denials, empty roots, unsupported global discovery, and partial coverage.
+Failures remain isolated to their root so other configured roots continue.
+Wiki node pagination uses Feishu's maximum supported page size of 50; Drive
+folder pagination uses 200 and Bitable table pagination uses 100.
 
 Run all tests from the `feishu` directory:
 
@@ -126,13 +145,12 @@ Run all tests from the `feishu` directory:
 python3 -m unittest -v
 ```
 
-### Live read-only validation
+### Previous live read-only validation
 
 The 2026-08-11 validation authenticated successfully and generated both output
 formats without modifying Feishu. It discovered two accessible resources (one
 Bitable/Base and one table) through the configured Wiki-node fallback. Global
 Wiki-space enumeration returned HTTP 400 and was recorded as partial coverage;
 the Drive root returned no accessible resources for the tenant application.
-Broader inventory coverage therefore requires Feishu to grant the application
-the relevant Wiki-space listing scope/data range and share additional Drive
-folders or resources with the application.
+The result demonstrated why global enumeration is insufficient. The next live
+validation must use the controlled Knowledge Roots manifest described above.
