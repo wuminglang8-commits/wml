@@ -16,6 +16,14 @@ class FakeTransport:
             return {"code": 0, "tenant_access_token": "test-tenant-token"}
         if "wiki/v2" in url:
             return {"code": 0, "data": {"node": {"obj_type": "bitable", "obj_token": "app-token"}}}
+        if method == "GET" and "/tables?" in url and "/records?" not in url:
+            return {
+                "code": 0,
+                "data": {
+                    "items": [{"table_id": connector.TABLE_ID, "name": "Test"}],
+                    "has_more": False,
+                },
+            }
         if url.endswith("/fields?page_size=100"):
             return {
                 "code": 0,
@@ -73,6 +81,20 @@ class ConnectorTests(unittest.TestCase):
             with self.assertRaisesRegex(connector.ConnectorError, "designated test target"):
                 connector.run(transport=FakeTransport())
 
+    def test_rejects_table_not_in_resolved_bitable(self):
+        class MissingTable(FakeTransport):
+            def __call__(self, method, url, headers, payload):
+                if method == "GET" and "/tables?" in url and "/records?" not in url:
+                    return {
+                        "code": 0,
+                        "data": {"items": [{"table_id": "another-table"}], "has_more": False},
+                    }
+                return super().__call__(method, url, headers, payload)
+
+        with patch.dict(os.environ, self.env, clear=True):
+            with self.assertRaisesRegex(connector.TablePermissionError, "not found"):
+                connector.run(transport=MissingTable())
+
     def test_authentication_error_is_distinct_and_does_not_leak_secret(self):
         def failed_auth(method, url, headers, payload):
             return {"code": 999, "msg": f"bad secret {payload.get('app_secret')}"}
@@ -94,7 +116,7 @@ class ConnectorTests(unittest.TestCase):
 
         class FailedTable(FakeTransport):
             def __call__(self, method, url, headers, payload):
-                if "/records?" in url:
+                if method == "GET" and "/tables?" in url and "/records?" not in url:
                     return {"code": 1254302}
                 return super().__call__(method, url, headers, payload)
 

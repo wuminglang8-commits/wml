@@ -120,6 +120,37 @@ class FeishuConnector:
             raise WikiResolutionError("Wiki node does not resolve to a Bitable")
         return app_token
 
+    def validate_target_table(self, token: str, app_token: str) -> None:
+        page_token: Optional[str] = None
+        try:
+            while True:
+                query: dict[str, Any] = {"page_size": 100}
+                if page_token:
+                    query["page_token"] = page_token
+                data = self._request(
+                    "GET",
+                    f"/bitable/v1/apps/{app_token}/tables",
+                    token=token,
+                    query=query,
+                )
+                _require_success(data, TablePermissionError, "Table listing")
+                page = data.get("data", {})
+                if any(item.get("table_id") == TABLE_ID for item in page.get("items", [])):
+                    return
+                if not page.get("has_more"):
+                    raise TablePermissionError(
+                        "Designated table was not found in the resolved Bitable"
+                    )
+                page_token = page.get("page_token")
+                if not page_token:
+                    raise TablePermissionError(
+                        "Table listing returned an invalid pagination response"
+                    )
+        except TablePermissionError:
+            raise
+        except ConnectorError as exc:
+            raise TablePermissionError(str(exc)) from None
+
     def list_records(self, token: str, app_token: str) -> list[dict[str, Any]]:
         records: list[dict[str, Any]] = []
         page_token: Optional[str] = None
@@ -240,6 +271,7 @@ def run(write_test: bool = False, transport: Transport = _http_transport) -> dic
     connector = FeishuConnector(app_id, app_secret, transport)
     token = connector.authenticate()
     app_token = connector.resolve_wiki_node(token)
+    connector.validate_target_table(token, app_token)
     records = connector.list_records(token, app_token)
     result: dict[str, Any] = {
         "mode": "write-test" if write_test else "read-only",

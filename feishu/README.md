@@ -51,6 +51,8 @@ The default command is read-only. Its JSON output contains only the mode,
 resolution result, record count, and aggregate counts for `Pending`,
 `Connected`, and other/unset statuses. It never prints credentials, tokens,
 authorization headers, app tokens, record IDs, or arbitrary record fields.
+Before reading records, it uses Feishu's official list-tables endpoint to
+confirm that the designated table belongs to the Bitable resolved from Wiki.
 
 To perform the narrowly scoped connection test:
 
