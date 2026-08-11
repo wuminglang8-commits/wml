@@ -2,6 +2,13 @@
 
 ## 2026-08-07
 
+### Safe Feishu connector added
+
+- Added a dependency-free connector for the designated Feishu Wiki/Bitable test target.
+- Added read-only summaries and an explicit, verified `--write-test` workflow.
+- Added official list-tables validation before reading the designated table.
+- Added mocked tests, safe error categories, and reproducible run instructions.
+
 ### Shared AI execution layer initialized
 
 - Added repository purpose and GPT ↔ Codex workflow.
