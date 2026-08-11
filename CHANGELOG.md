@@ -1,5 +1,13 @@
 # CHANGELOG.md
 
+## 2026-08-11
+
+### Read-only Feishu workspace inventory added
+
+- Added automatic Wiki, Drive, and Bitable metadata discovery using GET-only APIs.
+- Added a normalized JSON index, human-readable report, candidate classification, and retrieval-quality analysis.
+- Added partial-access handling and mock coverage without changing Feishu content.
+
 ## 2026-08-07
 
 ### Safe Feishu connector added

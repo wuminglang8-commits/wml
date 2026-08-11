@@ -89,3 +89,50 @@ documented Wiki/Bitable, and have Wiki plus Bitable read permissions. The
 `--write-test` command additionally requires Bitable record-edit permission.
 The target table must contain a `Status` field that accepts `Pending` and
 `Connected`. These settings cannot be inferred or changed by this connector.
+
+## Read-only workspace inventory
+
+The inventory CLI reuses the connector authentication and secret-safe GET
+transport. It recursively discovers accessible Wiki spaces/nodes and Drive
+folders/files, inventories Bitable tables discovered through those surfaces,
+and continues when an individual scope is inaccessible.
+If the application cannot enumerate all Wiki spaces, discovery automatically
+falls back to the designated Wiki node already configured and verified by the
+Issue #1 connector; this is recorded as partial coverage rather than presented
+as a complete workspace inventory.
+
+```bash
+python3 feishu/inventory.py
+```
+
+It writes a versioned machine-readable index to
+
+- `feishu/inventory-output/inventory.json`
+- `feishu/inventory-output/inventory-report.md`
+
+The generated directory is ignored by Git. Output includes resource metadata
+and retrieval identifiers but never credentials, access tokens, authorization
+headers, document bodies, or Bitable record contents. Classification values are
+metadata-based candidates with confidence/status, not an approved taxonomy.
+
+The app needs the relevant read scopes and document access for Wiki node lists,
+Drive folder listings, and Bitable table metadata. Feishu may expose only the
+resources explicitly shared with a tenant application; inaccessible discovery
+scopes are recorded as partial results rather than terminating the inventory.
+
+Run all tests from the `feishu` directory:
+
+```bash
+python3 -m unittest -v
+```
+
+### Live read-only validation
+
+The 2026-08-11 validation authenticated successfully and generated both output
+formats without modifying Feishu. It discovered two accessible resources (one
+Bitable/Base and one table) through the configured Wiki-node fallback. Global
+Wiki-space enumeration returned HTTP 400 and was recorded as partial coverage;
+the Drive root returned no accessible resources for the tenant application.
+Broader inventory coverage therefore requires Feishu to grant the application
+the relevant Wiki-space listing scope/data range and share additional Drive
+folders or resources with the application.
