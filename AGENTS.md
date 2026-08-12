@@ -2,9 +2,9 @@
 
 ## 1. Mission
 
-This repository is the shared execution layer between ChatGPT and Codex. Codex is the implementation engine; ChatGPT is normally the business-context, specification, orchestration, and acceptance layer.
+This repository is the shared execution and knowledge layer between ChatGPT, Codex, and Obsidian. Codex is the implementation engine; ChatGPT is normally the business-context, specification, orchestration, memory-curation, and acceptance layer. Obsidian is the human-facing knowledge interface over the same Markdown source.
 
-The user should not need to restate the same business context in both systems.
+The user should not need to restate the same business context in different systems.
 
 ## 2. Instruction precedence
 
@@ -13,9 +13,10 @@ Use this order when instructions conflict:
 1. Explicit instruction for the current task
 2. Current GitHub Issue / task acceptance criteria
 3. Project-specific rules and documented decisions
-4. `BUSINESS_RULES.md`
-5. This `AGENTS.md`
-6. Existing code conventions
+4. Relevant notes under `brain/`
+5. `BUSINESS_RULES.md`
+6. This `AGENTS.md`
+7. Existing code conventions
 
 Never silently override a higher-priority instruction.
 
@@ -24,12 +25,16 @@ Never silently override a higher-priority instruction.
 Before changing code, read as applicable:
 
 - `AGENTS.md`
+- `brain/00_HOME.md`
+- relevant notes linked from the Company Brain Home
 - `PROJECT.md`
 - `BUSINESS_RULES.md`
 - `ACCEPTANCE_CRITERIA.md`
 - relevant entries in `DECISIONS.md`
 - the current GitHub Issue / task description
 - the code paths directly affected by the task
+
+Do not load the entire Company Brain indiscriminately. Resolve the current project/entities first and read only relevant notes.
 
 Do not start with a broad rewrite before understanding the existing implementation.
 
@@ -97,18 +102,26 @@ Explicit approval is required before:
 
 ## 9. Shared-memory hygiene
 
-Do not write raw conversation history into this repository.
+The canonical cross-tool business-memory directory is `brain/`.
 
-Persist only information that is useful across future tasks:
+Do not automatically write raw conversation history into the operational memory layer. Persist structured information that is useful across future tasks:
 
 - stable business rules;
-- project architecture/context;
+- company context;
+- project architecture/status;
 - durable decisions and rationale;
 - acceptance standards;
-- meaningful implementation history.
+- entity/partner context;
+- reusable workflows;
+- important conversation summaries;
+- document/output standards.
 
-If a new user instruction is explicitly declared to be a future default, update the relevant shared rule/document so future Codex work inherits it.
+Full raw ChatGPT exports, if intentionally imported, belong in a separate archive layer and should not be loaded by default.
+
+If a new user instruction is explicitly declared to be a future default, update the relevant Company Brain note so future ChatGPT/Codex work inherits it.
 
 ## 10. Communication style
 
 Technical output should be precise and concise. Translate engineering details into business impact where useful. Surface uncertainty instead of hiding it.
+
+For the current user, technical instructions should default to beginner-friendly execution: ask the user to perform only actions that require personal authorization, credential entry, or a simple one-line command; Codex should handle the rest where possible.
