@@ -6,3 +6,5 @@ __pycache__/
 .venv/
 venv/
 .DS_Store
+feishu/inventory-output/
+feishu/knowledge-roots.json

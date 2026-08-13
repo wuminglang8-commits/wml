@@ -18,6 +18,14 @@ Record durable decisions here. Do not record routine implementation details.
 
 **Implication:** One-off overrides do not become permanent defaults unless the user explicitly says they should apply going forward.
 
+## 2026-08-11 — Inventory Feishu through controlled Knowledge Roots
+
+**Decision:** A tenant application inventories only explicitly configured Wiki spaces/subtrees, shared Drive folders, and Bitable Bases. It does not infer workspace-wide coverage from tenant Wiki/Drive roots.
+
+**Why:** Feishu tenant applications do not have an enterprise-wide personal Drive root, and accessible Wiki spaces depend on explicit membership and permissions. Global enumeration therefore cannot reliably represent the business workspace.
+
+**Implication:** Inventory reports always state the configured-root coverage boundary, preserve partial failures, and require deliberate root configuration before live scans.
+
 ## 2026-08-07 — Separate orchestration from implementation
 
 **Decision:** ChatGPT normally handles business interpretation, task decomposition, and business acceptance; Codex normally handles code implementation and technical validation.

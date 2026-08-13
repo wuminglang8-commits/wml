@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "roots": [
+    {
+      "type": "wiki_space",
+      "id": "replace_with_wiki_space_id",
+      "title": "Business Wiki"
+    },
+    {
+      "type": "wiki_node",
+      "id": "replace_with_wiki_node_token",
+      "title": "Operations subtree"
+    },
+    {
+      "type": "drive_folder",
+      "id": "replace_with_shared_folder_token",
+      "title": "Shared Business Files"
+    },
+    {
+      "type": "bitable",
+      "id": "replace_with_bitable_app_token",
+      "title": "Business Base"
+    }
+  ]
+}

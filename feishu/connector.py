@@ -91,6 +91,15 @@ class FeishuConnector:
             headers["Authorization"] = f"Bearer {token}"
         return self.transport(method, url, headers, payload)
 
+    def get_json(
+        self,
+        path: str,
+        token: str,
+        query: Optional[dict[str, Any]] = None,
+    ) -> dict[str, Any]:
+        """Call a Feishu GET endpoint through the secret-safe transport."""
+        return self._request("GET", path, token=token, query=query)
+
     def authenticate(self) -> str:
         try:
             data = self._request(

@@ -1,5 +1,14 @@
 # CHANGELOG.md
 
+## 2026-08-11
+
+### Read-only Feishu workspace inventory added
+
+- Added configured Wiki space/subtree, shared Drive folder, and Bitable Knowledge Roots using GET-only APIs.
+- Added a normalized JSON index, human-readable report, candidate classification, and retrieval-quality analysis.
+- Added explicit discovered, inaccessible, permission-denied, empty-root, unsupported-global-discovery, and partial-coverage reporting.
+- Removed workspace-wide coverage claims based on global Wiki or empty tenant-app Drive roots.
+
 ## 2026-08-07
 
 ### Safe Feishu connector added

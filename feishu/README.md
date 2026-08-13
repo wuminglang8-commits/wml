@@ -89,3 +89,68 @@ documented Wiki/Bitable, and have Wiki plus Bitable read permissions. The
 `--write-test` command additionally requires Bitable record-edit permission.
 The target table must contain a `Status` field that accepts `Pending` and
 `Connected`. These settings cannot be inferred or changed by this connector.
+
+## Read-only workspace inventory
+
+The inventory CLI reuses the connector authentication and secret-safe GET
+transport. It uses a controlled Business Knowledge Roots model because a tenant
+application's Wiki/Drive roots are not a complete enterprise-wide workspace
+index. It never treats an empty app Drive root as complete coverage and does
+not perform global search or user OAuth.
+
+Copy the committed template to the ignored local configuration file, then
+replace the examples with the roots the application is allowed to read:
+
+```bash
+cp feishu/knowledge-roots.example.json feishu/knowledge-roots.json
+```
+
+Supported root types are:
+
+- `wiki_space`: a Wiki space ID; scans all nodes below the space root.
+- `wiki_node`: a Wiki node token; resolves and scans only that subtree.
+- `drive_folder`: a shared Drive folder token; scans all nested files/folders.
+- `bitable`: a Bitable app token; inventories the Base and its tables.
+
+Root identifiers are retrieval metadata rather than credentials, but the live
+configuration remains ignored to avoid publishing internal workspace layout.
+Share each configured Wiki space/node or Drive folder with the tenant app and
+grant its read-only scopes. A configured Base must also be readable by the app.
+Do not add both a parent root and every child unless overlapping coverage is
+intentional.
+
+```bash
+python3 feishu/inventory.py --roots-file feishu/knowledge-roots.json
+```
+
+It writes a versioned machine-readable index to
+
+- `feishu/inventory-output/inventory.json`
+- `feishu/inventory-output/inventory-report.md`
+
+The generated directory is ignored by Git. Output includes resource metadata
+and retrieval identifiers but never credentials, access tokens, authorization
+headers, document bodies, or Bitable record contents. Classification values are
+metadata-based candidates with confidence/status, not an approved taxonomy.
+
+The report distinguishes discovered roots, inaccessible APIs, permission
+denials, empty roots, unsupported global discovery, and partial coverage.
+Failures remain isolated to their root so other configured roots continue.
+Wiki node pagination uses Feishu's maximum supported page size of 50; Drive
+folder pagination uses 200 and Bitable table pagination uses 100.
+
+Run all tests from the `feishu` directory:
+
+```bash
+python3 -m unittest -v
+```
+
+### Previous live read-only validation
+
+The 2026-08-11 validation authenticated successfully and generated both output
+formats without modifying Feishu. It discovered two accessible resources (one
+Bitable/Base and one table) through the configured Wiki-node fallback. Global
+Wiki-space enumeration returned HTTP 400 and was recorded as partial coverage;
+the Drive root returned no accessible resources for the tenant application.
+The result demonstrated why global enumeration is insufficient. The next live
+validation must use the controlled Knowledge Roots manifest described above.
